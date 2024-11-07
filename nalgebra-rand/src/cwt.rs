@@ -1,6 +1,6 @@
-use rand_package::Rng;
 use nalgebra::Const;
 use nalgebra_glm::{RealNumber, TMat};
+use rand_package::Rng;
 
 /// Generate a random matrix of all zeroes
 /// except one (+1/-1) at some row in every column.
@@ -9,23 +9,22 @@ fn random_clarkson_woodruff_matrix<
     const ROWS: usize,
     const COLS: usize,
     R: Rng + ?Sized,
->(rng: &mut R) -> TMat<T, ROWS, COLS> {
-
+>(
+    rng: &mut R,
+) -> TMat<T, ROWS, COLS> {
     let mut zeroes = TMat::from_element_generic(Const::<ROWS>, Const::<COLS>, T::zero());
 
-    (0..COLS)
-        .into_iter()
-        .for_each(|column_index| {
-            let row_index = rng.gen_range(0..ROWS);
-            let negative: bool = rng.gen();
-            let mut value = T::one();
-            if negative {
-                value = value.neg();
-            }
-            unsafe {
-                *zeroes.get_unchecked_mut((row_index, column_index)) = value;
-            }
-        });
+    (0..COLS).into_iter().for_each(|column_index| {
+        let row_index = rng.gen_range(0..ROWS);
+        let negative: bool = rng.gen();
+        let mut value = T::one();
+        if negative {
+            value = value.neg();
+        }
+        unsafe {
+            *zeroes.get_unchecked_mut((row_index, column_index)) = value;
+        }
+    });
 
     zeroes
 }
@@ -45,20 +44,19 @@ pub fn clarkson_woodruff_transform<
     const COLS: usize,
     const SKETCH: usize,
     R: Rng + ?Sized,
-> (
+>(
     matrix: &TMat<T, ROWS, COLS>,
-    rng: &mut R
+    rng: &mut R,
 ) -> TMat<T, SKETCH, COLS> {
     random_clarkson_woodruff_matrix::<T, SKETCH, ROWS, R>(rng) * matrix
 }
 
-
 #[cfg(test)]
 mod tests {
+    use super::clarkson_woodruff_transform;
+    use nalgebra_glm::TMat;
     use rand_package::distributions::Standard;
     use rand_package::Rng;
-    use nalgebra_glm::TMat;
-    use super::clarkson_woodruff_transform;
 
     #[test]
     fn test_clarkson_woodruff_matrix() {
@@ -99,7 +97,11 @@ mod tests {
         let median: f64 = (differences[samples / 2] + differences[samples / 2 + 1]) / 2.0;
         let largest: f64 = differences[samples - 1];
         let smallest: f64 = differences[0];
-        let variance: f64 = differences.iter().map(|&v| (v - mean) * (v - mean)).sum::<f64>() / (samples as f64 - 1.0);
+        let variance: f64 = differences
+            .iter()
+            .map(|&v| (v - mean) * (v - mean))
+            .sum::<f64>()
+            / (samples as f64 - 1.0);
         let stddev: f64 = variance.sqrt();
         let iqr: f64 = differences[(3 * samples) / 4] - differences[samples / 4];
         let q1: f64 = median - 1.5 * iqr;
