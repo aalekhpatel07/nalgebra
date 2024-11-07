@@ -1,0 +1,18 @@
+[package]
+name = "nalgebra-rand"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+default = ["rand", "rand-no-std"]
+rand-no-std = ["nalgebra/rand"]
+rand = ["rand-package"]
+
+[dependencies]
+nalgebra = { version = "0.33", path = "..", features = ["default", "rand-no-std"] }
+rand-package = { package = "rand", version = "0.8", optional = true, default-features = false }
+nalgebra-glm = { version = "*", path = "../nalgebra-glm"}
+
+[dev-dependencies]
+nalgebra = { version = "0.33", path = "..", features = ["default", "rand"] }
+rand-package = { package = "rand", version = "0.8" }
